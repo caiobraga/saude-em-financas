@@ -10,14 +10,13 @@ import { Bell, ReceiptText, User, Settings, HelpCircle, LogOut } from "lucide-re
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { } from "@supabase/supabase-js"
-import { createClient } from '@/utils/supabase/server'
 import { logout } from '@/app/auth/actions'
-import { generateStripeBillingPortalLink } from "@/utils/stripe/api"
 
-export default async function DashboardHeaderProfileDropdown() {
-    const supabase = createClient()
-    const { data: { user }, error } = await supabase.auth.getUser()
-    const billingPortalURL = await generateStripeBillingPortalLink(user!.email!)
+export default function DashboardHeaderProfileDropdown() {
+    /* const supabase = createClient()
+     const { data: { user }, error } = await supabase.auth.getUser()
+     const billingPortalURL = await generateStripeBillingPortalLink(user!.email!)*/
+    const billingPortalURL = "https://dashboard.stripe.com/billing/portal"
     return (
         <nav className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2">
