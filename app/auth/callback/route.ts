@@ -27,9 +27,8 @@ export async function GET(request: Request) {
                 // create Stripe customers
                 const stripeID = await createStripeCustomer(user!.id, user!.email!, user!.user_metadata.full_name)
                 // Create record in DB
-                await db.insert(usersTable).values({ name: user!.user_metadata.full_name, email: user!.email!, stripe_id: stripeID, plan: 'none' })
+                await db.insert(usersTable).values({ name: user!.user_metadata.full_name, email: user!.email!, stripe_id: stripeID, plan: 'none', id: stripeID })
             }
-
             const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development'
             if (isLocalEnv) {
