@@ -87,8 +87,8 @@ To create the necessary tables to start, run `npm drizzle-kit migrate`
 #### To alter or add a table
 1. navigate to `/utils/db/schema.ts`
 2. Edit/add a table
-3. run `npx drizzle-kit activate` to generate migration files
-4. run `npm drizzle-kit migrate` to apple migration
+3. run `npx drizzle-kit generate` to generate migration files
+4. run `npx drizzle-kit migrate` to apple migration
 
 ```bash
 npm run dev

@@ -36,31 +36,31 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const plans: Plan[] = [
     {
         name: IS_PRODUCTION ? 'Basic' : 'Basic-Test',
-        price: 1000, // price in cents
+        price: 150000, // price in cents
         description: 'Perfect for small teams and individuals',
         features: [
-            'Up to 10 users',
-            'Up to 1000 records',
+            'Up to 10 GB of history data',
+            'Up to 1000 messages a day',
             'Up to 1000 API calls'
         ]
     },
     {
         name: IS_PRODUCTION ? 'Pro' : 'Pro-Test',
-        price: 2000,
+        price: 280000,
         description: 'Great for growing teams',
         features: [
-            'Up to 100 users',
-            'Up to 10000 records',
+            'Up to 100 GB of history data',
+            'Up to 10000 messages a day',
             'Up to 10000 API calls'
         ]
     },
     {
         name: IS_PRODUCTION ? 'Enterprise' : 'Enterprise-Test',
-        price: 5000,
+        price: 420000,
         description: 'For large organizations',
         features: [
-            'Unlimited users',
-            'Unlimited records',
+            'Unlimited history data',
+            'Unlimited messages a day',
             'Unlimited API calls'
         ]
     }
@@ -130,7 +130,7 @@ async function setupWebhook(): Promise<void> {
 
     const webhooks = await stripe.webhookEndpoints.list();
     const webhookUrl = `${PUBLIC_URL}/webhook/stripe`;
-    
+
     if (!webhooks.data.some((webhook: WebhookEndpoint) => webhook.url === webhookUrl)) {
         await stripe.webhookEndpoints.create({
             enabled_events: [
