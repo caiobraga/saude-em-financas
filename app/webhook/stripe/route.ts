@@ -7,7 +7,8 @@ export async function POST(request: Request) {
         const response = await request.json()
         console.log(response)
         // On subscribe, write to db
-        console.log(response.data.object.customer)
+        console.log("customer: ", response.data.object.customer)
+        console.log("object: ", response.data.object)
         await db.update(usersTable).set({ plan: response.data.object.id }).where(eq(usersTable.stripe_id, response.data.object.customer));
         // Process the webhook payload
     } catch (error: any) {

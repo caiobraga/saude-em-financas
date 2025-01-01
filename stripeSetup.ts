@@ -1,7 +1,7 @@
 if (process.env.NODE_ENV === 'production') {
     require('dotenv').config(); // Load from .env in production
 } else {
-    require('dotenv').config({ path: '.env.local' }); // Load from .env.local in development
+    require('dotenv').config({ path: '.env' }); // Load from .env.local in development
 }
 
 const Stripe = require('stripe');

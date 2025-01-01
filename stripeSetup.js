@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -38,7 +38,7 @@ if (process.env.NODE_ENV === 'production') {
     require('dotenv').config(); // Load from .env in production
 }
 else {
-    require('dotenv').config({ path: '.env.local' }); // Load from .env.local in development
+    require('dotenv').config({ path: '.env' }); // Load from .env.local in development
 }
 var Stripe = require('stripe');
 var stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -91,23 +91,23 @@ function createProduct(plan) {
                     product = existingProducts.data.find(function (p) { return p.name === plan.name; });
                     if (!!product) return [3 /*break*/, 3];
                     return [4 /*yield*/, stripe.products.create({
-                            name: plan.name,
-                            description: plan.description,
-                            metadata: {
-                                features: JSON.stringify(plan.features)
-                            }
-                        })];
+                        name: plan.name,
+                        description: plan.description,
+                        metadata: {
+                            features: JSON.stringify(plan.features)
+                        }
+                    })];
                 case 2:
                     // Create new product if it doesn't exist
                     product = _a.sent();
                     console.log("Created product: ".concat(plan.name));
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, stripe.products.update(product.id, {
-                        description: plan.description,
-                        metadata: {
-                            features: JSON.stringify(plan.features)
-                        }
-                    })];
+                    description: plan.description,
+                    metadata: {
+                        features: JSON.stringify(plan.features)
+                    }
+                })];
                 case 4:
                     // Update existing product's features
                     product = _a.sent();
@@ -124,24 +124,24 @@ function createPrice(product, plan) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, stripe.prices.list({
-                        product: product.id,
-                        active: true
-                    })];
+                    product: product.id,
+                    active: true
+                })];
                 case 1:
                     existingPrices = _a.sent();
                     if (!(existingPrices.data.length === 0)) return [3 /*break*/, 4];
                     return [4 /*yield*/, stripe.prices.create({
-                            product: product.id,
-                            unit_amount: plan.price,
-                            currency: CURRENCY,
-                            recurring: { interval: 'month' }
-                        })];
+                        product: product.id,
+                        unit_amount: plan.price,
+                        currency: CURRENCY,
+                        recurring: { interval: 'month' }
+                    })];
                 case 2:
                     price = _a.sent();
                     // Set as default price
                     return [4 /*yield*/, stripe.products.update(product.id, {
-                            default_price: price.id
-                        })];
+                        default_price: price.id
+                    })];
                 case 3:
                     // Set as default price
                     _a.sent();
@@ -170,13 +170,13 @@ function setupWebhook() {
                     webhookUrl = "".concat(PUBLIC_URL, "/webhook/stripe");
                     if (!!webhooks.data.some(function (webhook) { return webhook.url === webhookUrl; })) return [3 /*break*/, 3];
                     return [4 /*yield*/, stripe.webhookEndpoints.create({
-                            enabled_events: [
-                                'customer.subscription.created',
-                                'customer.subscription.deleted',
-                                'customer.subscription.updated'
-                            ],
-                            url: webhookUrl,
-                        })];
+                        enabled_events: [
+                            'customer.subscription.created',
+                            'customer.subscription.deleted',
+                            'customer.subscription.updated'
+                        ],
+                        url: webhookUrl,
+                    })];
                 case 2:
                     _a.sent();
                     console.log('Created webhook endpoint');
@@ -210,9 +210,9 @@ function setupStripe() {
                 case 4:
                     _i++;
                     return [3 /*break*/, 1];
-                case 5: 
-                // Setup webhook
-                return [4 /*yield*/, setupWebhook()];
+                case 5:
+                    // Setup webhook
+                    return [4 /*yield*/, setupWebhook()];
                 case 6:
                     // Setup webhook
                     _a.sent();
