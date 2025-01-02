@@ -36,6 +36,20 @@
       "when": 1735769384047,
       "tag": "0004_first_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1735853023411,
+      "tag": "0005_abnormal_queen_noir",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1735853594333,
+      "tag": "0006_salty_doorman",
+      "breakpoints": true
     }
   ]
 }

@@ -1,15 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import AddSectionForm from "@/components/classes/addSectionForm";
-import { getSections, insertSection, updateSection, deleteSection } from "./actions";
-import { Button } from "@nextui-org/react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/modal";
+import {
+    getSections, insertSection, updateSection, deleteSection, videoUpload, insertClass,
+    getClasses,
+    deleteClass,
+    getVideosFromSectionId
+} from "./actions";
+import { Button, user } from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/modal";
 
 import { CircleMinus, CirclePlus, Pencil } from "lucide-react";
 import AddModalSectionForm from "@/components/classes/addModalSectionForm";
 import { toast } from "react-toastify";
 import ConfirmDeletionSectionForm from "@/components/classes/confirmDeletionModalSection";
+import UploadFileForm from "@/components/classes/uploadFileForm";
+import ReactPlayer from 'react-player';
 
 interface ClassesProps {
     readonly userEmail: string;
@@ -27,13 +33,27 @@ interface Section {
     updated_at: Date;
 }
 
+interface Classes {
+    id: string;
+    section_id: string;
+    video_id: string;
+    title: string;
+    description: string;
+    order: number;
+    created_at: Date;
+    updated_at: Date;
+}
+
 interface SectionWithChildren extends Section {
     children: SectionWithChildren[];
+    classes: Classes[];
 }
+
 
 
 export default function Classes({ userEmail, plan, access_level }: ClassesProps) {
     const [sections, setSections] = useState<Section[]>([]);
+    const [classes, setClasses] = useState<Classes[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -43,20 +63,27 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
     const [parent_id, setParentId] = useState<string | null>(null);
     const [id, setId] = useState<string | null>(null);
 
+    const [loadingAddVideo, setLoadingAddVideo] = useState<boolean>(false);
+
+    const BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
     // Fetch sections on component mount
     useEffect(() => {
-        const fetchSections = async () => {
+        const fetchSectionsAndClasses = async () => {
             setLoading(true);
             try {
                 const fetchedSections = await getSections();
                 setSections(fetchedSections);
+                const fetchedClasses = await getClasses();
+                setClasses(fetchedClasses);
             } catch (error) {
                 console.error("Error fetching sections:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchSections();
+
+        fetchSectionsAndClasses();
     }, []);
 
     const openEditOrAddModal = (new_parent_id: string | null, id: string | null) => {
@@ -135,18 +162,22 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                 <p className="text-lg text-gray-600">Plan: {plan}</p>
                 <p className="text-lg text-gray-600">Access Level: {access_level}</p>
             </header>
+            {(access_level === "admin" && !loading) && <UploadFileForm videoUpload={videoUpload} sectionOptions={sections} setLoadingAddVideo={setLoadingAddVideo} loadingAddVideo={loadingAddVideo} />}
 
             {/* Section Management */}
             <main className="bg-white p-4 rounded-md shadow-md space-y-6">
                 <h2 className="text-2xl font-bold text-gray-700">Classes</h2>
                 {loading ? (
-                    <p className="text-gray-500">Loading sections...</p>
+                    <p className="text-gray-500">Loading your classes...</p>
                 ) : sections.length > 0 ? (
                     <SectionList
                         sections={sections}
+                        classes={classes}
                         onDelete={openDeleteModal}
                         isAdmin={access_level === "admin"}
                         openEditOrAddModal={openEditOrAddModal}
+                        BASE_URL={BASE_URL ?? ''}
+                        access_level={access_level}
                     />
                 ) : (
                     <p className="text-gray-500">No sections available. Add a new section below.</p>
@@ -168,12 +199,18 @@ function SectionList({
     sections,
     onDelete,
     isAdmin,
-    openEditOrAddModal
+    openEditOrAddModal,
+    classes,
+    BASE_URL,
+    access_level
 }: {
     sections: Section[];
     onDelete: (id: string) => void;
     isAdmin: boolean;
     openEditOrAddModal: (parent_id: string | null, id: string | null) => void;
+    classes: Classes[];
+    BASE_URL: string;
+    access_level: "user" | "admin";
 }) {
     // Helper function to build the section hierarchy
     const buildSectionHierarchy = (sections: Section[]): SectionWithChildren[] => {
@@ -181,7 +218,7 @@ function SectionList({
 
         // Initialize all sections in the map with empty children
         sections.forEach((section) =>
-            sectionMap.set(section.id, { ...section, children: [] })
+            sectionMap.set(section.id, { ...section, children: [], classes: [] })
         );
 
         const orderedSections = sections.sort((a, b) => a.order - b.order);
@@ -217,13 +254,17 @@ function SectionList({
                     onDelete={onDelete}
                     isAdmin={isAdmin}
                     openEditOrAddModal={openEditOrAddModal}
+                    classes={classes.filter((cls) => cls.section_id === section.id || section.children.some(child => child.id === cls.section_id))}
+                    BASE_URL={BASE_URL}
                 />
             ))}
-            <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                openEditOrAddModal(null, null);
-            }}>
-                <CirclePlus />
-            </Button>
+            {
+                access_level === "admin" &&
+                <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
+                    openEditOrAddModal(null, null);
+                }}>
+                    <CirclePlus />
+                </Button>}
         </div>
     );
 }
@@ -232,12 +273,16 @@ function SectionItem({
     section,
     onDelete,
     isAdmin,
-    openEditOrAddModal
+    openEditOrAddModal,
+    classes,
+    BASE_URL
 }: {
     section: SectionWithChildren;
     onDelete: (id: string) => void;
     isAdmin: boolean;
     openEditOrAddModal: (parent_id: string | null, id: string | null) => void;
+    classes: Classes[];
+    BASE_URL: string;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -292,23 +337,67 @@ function SectionItem({
                     </p>
                     {isAdmin && (
                         <div className="flex mt-4 space-x-2">
-                            <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                                openEditOrAddModal(section.id, null);
-                            }}>
+                            <Button
+                                isIconOnly
+                                aria-label="Like"
+                                color="danger"
+                                onPress={() => {
+                                    openEditOrAddModal(section.id, null);
+                                }}
+                            >
                                 <CirclePlus />
                             </Button>
-                            <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                                onDelete(section.id);
-                            }}>
+                            <Button
+                                isIconOnly
+                                aria-label="Like"
+                                color="danger"
+                                onPress={() => {
+                                    onDelete(section.id);
+                                }}
+                            >
                                 <CircleMinus />
                             </Button>
-                            <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                                openEditOrAddModal(section.parent_id, section.id);
-                            }}>
+                            <Button
+                                isIconOnly
+                                aria-label="Like"
+                                color="danger"
+                                onPress={() => {
+                                    openEditOrAddModal(section.parent_id, section.id);
+                                }}
+                            >
                                 <Pencil />
                             </Button>
                         </div>
                     )}
+                    {/* Render Classes */}
+                    {classes.length > 0 && (
+                        <div className="mt-6">
+                            <ul className="space-y-6">
+                                {classes.map((cls) => (
+                                    cls.section_id === section.id &&
+                                    <div key={cls.id} className="p-4 border rounded-lg bg-white shadow-md">
+                                        {/* Video Player */}
+                                        <div className="aspect-w-16 aspect-h-9 mb-4">
+                                            <ReactPlayer
+                                                url={`${BASE_URL}/storage/v1/object/public/classes/${cls.section_id}/${cls.video_id}.mp4`}
+                                                controls
+                                                width="100%"
+                                                height="100%"
+                                                className="rounded-lg"
+                                            />
+                                        </div>
+
+                                        {/* Title and Description */}
+                                        <li>
+                                            <h5 className="text-xl font-bold text-gray-900 mb-2">{cls.title}</h5>
+                                            <p className="text-base text-gray-700">{cls.description}</p>
+                                        </li>
+                                    </div>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {/* Render Child Sections */}
                     {section.children.length > 0 && (
                         <div className="pl-4 mt-4">
                             {section.children.map((childSection) => (
@@ -318,6 +407,8 @@ function SectionItem({
                                     onDelete={onDelete}
                                     isAdmin={isAdmin}
                                     openEditOrAddModal={openEditOrAddModal}
+                                    classes={classes.filter((cls) => cls.section_id === section.id || section.children.some(child => child.id === cls.section_id))}
+                                    BASE_URL={BASE_URL}
                                 />
                             ))}
                         </div>

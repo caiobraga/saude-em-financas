@@ -24,3 +24,17 @@ export const classes_sections = pgTable('classes_sections', {
 
 export type InsertClassesSections = typeof classes_sections.$inferInsert;
 export type SelectClassesSections = typeof classes_sections.$inferSelect;
+
+export const classes = pgTable('classes', {
+    id: text('id').primaryKey(),
+    section_id: text('section_id').notNull(),
+    video_id: text('video_id').notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull(),
+    order: integer('order').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertClasses = typeof classes.$inferInsert;
+export type SelectClasses = typeof classes.$inferSelect;
