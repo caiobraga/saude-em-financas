@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ToastContainer } from 'react-toastify';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,6 +21,7 @@ export default function DashboardLayout({
     return (
         <html lang="en">
             {children}
+            <ToastContainer />
         </html>
     );
 }

@@ -8,8 +8,12 @@ import { getStripePlan } from "@/utils/stripe/api";
 import { DEFAULT_SERIF_FONT } from "next/dist/shared/lib/constants";
 import { PgDateStringBuilder } from "drizzle-orm/pg-core";
 import { logout } from '@/app/auth/actions'
+import Dashboard from "./dashboard/dashboard";
+import Classes from "./classes/classes";
+import Forum from "./forum/forum";
+import Posts from "./posts/posts";
 
-export default async function Dashboard() {
+export default async function Page() {
     const supabase = createClient();
 
     // Fetch the user
@@ -35,11 +39,16 @@ export default async function Dashboard() {
     }
 
     const stripePlan = await getStripePlan(user!.email!)
-
-
+    const access_level = checkUserInDB[0].access_level as "user" | "admin";
+    const userEmail = data.user.email ?? '';
     return (
         <main className="flex-1">
-            <ClientDashboard userEmail={data.user.email ?? ''} plan={stripePlan} />
+            <ClientDashboard userEmail={userEmail} plan={stripePlan} access_level={access_level}
+                classes={<Classes userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+                dashboard={<Dashboard userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+                forum={<Forum userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+                posts={<Posts userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+            />
         </main>
     );
 }

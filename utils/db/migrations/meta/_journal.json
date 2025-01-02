@@ -22,6 +22,20 @@
       "when": 1734826009071,
       "tag": "0002_regular_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1735766494219,
+      "tag": "0003_yummy_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1735769384047,
+      "tag": "0004_first_veda",
+      "breakpoints": true
     }
   ]
 }

@@ -34,7 +34,9 @@ export default function DashboardHeader({ plan, page, setPage, pagesList }: Dash
                             pagesList.map((pageItem) => (
                                 <button
                                     key={pageItem.name}
-                                    onClick={() => setPage(pageItem.name)}
+                                    onClick={() => {
+                                        setPage(pageItem.name)
+                                    }}
                                     className={`transition-colors hover:text-foreground/80  ${page === pageItem.name ? "text-foreground" : "text-foreground/60"
                                         }`}
                                 >
