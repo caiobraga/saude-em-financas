@@ -4,18 +4,16 @@ import React, { useState, useEffect } from "react";
 import {
     getSections, insertSection, updateSection, deleteSection, videoUpload, insertClass,
     getClasses,
-    deleteClass,
-    getVideosFromSectionId
 } from "./actions";
-import { Button, user } from "@nextui-org/react";
 import { useDisclosure } from "@nextui-org/modal";
 
-import { CircleMinus, CirclePlus, Pencil } from "lucide-react";
 import AddModalSectionForm from "@/components/classes/addModalSectionForm";
 import { toast } from "react-toastify";
 import ConfirmDeletionSectionForm from "@/components/classes/confirmDeletionModalSection";
 import UploadFileForm from "@/components/classes/uploadFileForm";
-import ReactPlayer from 'react-player';
+import SectionList from "@/components/classes/sectionList";
+import { Button } from "@nextui-org/react";
+import { CirclePlus } from "lucide-react";
 
 interface ClassesProps {
     readonly userEmail: string;
@@ -154,10 +152,10 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6 font-sans space-y-8">
+        <div className="max-w-full mx-auto p-6 font-sans space-y-8">
             {/* Header */}
             <header className="bg-blue-100 p-4 rounded-md shadow-md">
-                <h1 className="text-3xl font-bold text-gray-800">Wellcome</h1>
+                <h1 className="text-3xl font-bold text-gray-800">Classes</h1>
                 <p className="text-lg text-gray-600 mt-2">Acess: {userEmail}</p>
                 <p className="text-lg text-gray-600">Plan: {plan}</p>
                 <p className="text-lg text-gray-600">Access Level: {access_level}</p>
@@ -165,8 +163,7 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
             {(access_level === "admin" && !loading) && <UploadFileForm videoUpload={videoUpload} sectionOptions={sections} setLoadingAddVideo={setLoadingAddVideo} loadingAddVideo={loadingAddVideo} />}
 
             {/* Section Management */}
-            <main className="bg-white p-4 rounded-md shadow-md space-y-6">
-                <h2 className="text-2xl font-bold text-gray-700">Classes</h2>
+            <main >
                 {loading ? (
                     <p className="text-gray-500">Loading your classes...</p>
                 ) : sections.length > 0 ? (
@@ -180,241 +177,26 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                         access_level={access_level}
                     />
                 ) : (
-                    <p className="text-gray-500">No sections available. Add a new section below.</p>
+                    <>
+                        <p className="text-gray-500">No sections available. Add a new section below.</p>
+                        {
+                            access_level === "admin" &&
+                            <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
+                                openEditOrAddModal(null, null);
+                            }}>
+                                <CirclePlus />
+                            </Button>}
+                    </>
+
                 )}
+
                 {access_level === "admin" && <AddModalSectionForm title="Add Or Edit Section" onSubmit={handleAddSection} isOpen={isOpen} onOpenChange={onOpenChange} />}
 
                 {access_level === "admin" && <ConfirmDeletionSectionForm title="Are you sure you whant to delete this section?" onSubmit={confirmDelete} isOpen={deleteModalVisible} onOpenChange={() => {
                     setDeleteModalVisible(!deleteModalVisible);
                     setSectionToDelete(null);
                 }} />}
-
-
             </main>
-        </div>
-    );
-}
-
-function SectionList({
-    sections,
-    onDelete,
-    isAdmin,
-    openEditOrAddModal,
-    classes,
-    BASE_URL,
-    access_level
-}: {
-    sections: Section[];
-    onDelete: (id: string) => void;
-    isAdmin: boolean;
-    openEditOrAddModal: (parent_id: string | null, id: string | null) => void;
-    classes: Classes[];
-    BASE_URL: string;
-    access_level: "user" | "admin";
-}) {
-    // Helper function to build the section hierarchy
-    const buildSectionHierarchy = (sections: Section[]): SectionWithChildren[] => {
-        const sectionMap = new Map<string, SectionWithChildren>();
-
-        // Initialize all sections in the map with empty children
-        sections.forEach((section) =>
-            sectionMap.set(section.id, { ...section, children: [], classes: [] })
-        );
-
-        const orderedSections = sections.sort((a, b) => a.order - b.order);
-
-        // Populate children for parent sections
-        orderedSections.forEach((section) => {
-            if (section.parent_id) {
-                const parent = sectionMap.get(section.parent_id);
-                if (parent) {
-                    parent.children.push(sectionMap.get(section.id)!);
-                }
-            }
-        });
-
-        sectionMap.forEach((section) => {
-            section.children.sort((a, b) => a.order - b.order);
-        });
-
-        // Filter out only root sections (no parent_id or "0")
-        return Array.from(sectionMap.values()).filter(
-            (section) => !section.parent_id || section.parent_id === "0"
-        );
-    };
-
-    const sectionHierarchy = buildSectionHierarchy(sections);
-
-    return (
-        <div className="accordion space-y-4">
-            {sectionHierarchy.map((section) => (
-                <SectionItem
-                    key={section.id}
-                    section={section}
-                    onDelete={onDelete}
-                    isAdmin={isAdmin}
-                    openEditOrAddModal={openEditOrAddModal}
-                    classes={classes.filter((cls) => cls.section_id === section.id || section.children.some(child => child.id === cls.section_id))}
-                    BASE_URL={BASE_URL}
-                />
-            ))}
-            {
-                access_level === "admin" &&
-                <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                    openEditOrAddModal(null, null);
-                }}>
-                    <CirclePlus />
-                </Button>}
-        </div>
-    );
-}
-
-function SectionItem({
-    section,
-    onDelete,
-    isAdmin,
-    openEditOrAddModal,
-    classes,
-    BASE_URL
-}: {
-    section: SectionWithChildren;
-    onDelete: (id: string) => void;
-    isAdmin: boolean;
-    openEditOrAddModal: (parent_id: string | null, id: string | null) => void;
-    classes: Classes[];
-    BASE_URL: string;
-}) {
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    const toggleExpand = () => setIsExpanded(!isExpanded);
-
-    return (
-        <div className="border rounded-md shadow-sm">
-            <div
-                className="flex justify-between items-center p-4 bg-gray-100 cursor-pointer"
-                onClick={toggleExpand}
-            >
-                <h3 className="text-lg font-bold text-gray-800">{section.title}</h3>
-                <span>
-                    {isExpanded ? (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="w-5 h-5 text-blue-500"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M18 12H6"
-                            />
-                        </svg>
-                    ) : (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="w-5 h-5 text-blue-500"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 12h12m-6-6v12"
-                            />
-                        </svg>
-                    )}
-                </span>
-            </div>
-            {isExpanded && (
-                <div className="p-4 bg-white">
-                    <p className="text-gray-600">{section.description}</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                        Created: {new Date(section.created_at).toLocaleDateString()}
-                    </p>
-                    {isAdmin && (
-                        <div className="flex mt-4 space-x-2">
-                            <Button
-                                isIconOnly
-                                aria-label="Like"
-                                color="danger"
-                                onPress={() => {
-                                    openEditOrAddModal(section.id, null);
-                                }}
-                            >
-                                <CirclePlus />
-                            </Button>
-                            <Button
-                                isIconOnly
-                                aria-label="Like"
-                                color="danger"
-                                onPress={() => {
-                                    onDelete(section.id);
-                                }}
-                            >
-                                <CircleMinus />
-                            </Button>
-                            <Button
-                                isIconOnly
-                                aria-label="Like"
-                                color="danger"
-                                onPress={() => {
-                                    openEditOrAddModal(section.parent_id, section.id);
-                                }}
-                            >
-                                <Pencil />
-                            </Button>
-                        </div>
-                    )}
-                    {/* Render Classes */}
-                    {classes.length > 0 && (
-                        <div className="mt-6">
-                            <ul className="space-y-6">
-                                {classes.map((cls) => (
-                                    cls.section_id === section.id &&
-                                    <div key={cls.id} className="p-4 border rounded-lg bg-white shadow-md">
-                                        {/* Video Player */}
-                                        <div className="aspect-w-16 aspect-h-9 mb-4">
-                                            <ReactPlayer
-                                                url={`${BASE_URL}/storage/v1/object/public/classes/${cls.section_id}/${cls.video_id}.mp4`}
-                                                controls
-                                                width="100%"
-                                                height="100%"
-                                                className="rounded-lg"
-                                            />
-                                        </div>
-
-                                        {/* Title and Description */}
-                                        <li>
-                                            <h5 className="text-xl font-bold text-gray-900 mb-2">{cls.title}</h5>
-                                            <p className="text-base text-gray-700">{cls.description}</p>
-                                        </li>
-                                    </div>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    {/* Render Child Sections */}
-                    {section.children.length > 0 && (
-                        <div className="pl-4 mt-4">
-                            {section.children.map((childSection) => (
-                                <SectionItem
-                                    key={childSection.id}
-                                    section={childSection}
-                                    onDelete={onDelete}
-                                    isAdmin={isAdmin}
-                                    openEditOrAddModal={openEditOrAddModal}
-                                    classes={classes.filter((cls) => cls.section_id === section.id || section.children.some(child => child.id === cls.section_id))}
-                                    BASE_URL={BASE_URL}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 }
