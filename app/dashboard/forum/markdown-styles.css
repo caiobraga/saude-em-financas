@@ -1,0 +1,63 @@
+/* markdown-styles.css */
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+h2 {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0.75rem 0;
+}
+
+h4 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+h5 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+h6 {
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+p {
+    margin: 0.5rem 0;
+}
+
+ul,
+ol {
+    margin: 0.5rem 1rem;
+    padding: 0 1rem;
+}
+
+blockquote {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-left: 4px solid #ccc;
+    background-color: #f9f9f9;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+a {
+    color: blue;
+    text-decoration: underline;
+}

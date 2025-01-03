@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { integer, pgTable, text, timestamp, PgArray } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users_table', {
     id: text('id').primaryKey(),
@@ -65,3 +65,31 @@ export const posts = pgTable('posts', {
 
 export type InsertPosts = typeof posts.$inferInsert;
 export type SelectPosts = typeof posts.$inferSelect;
+
+export const forum_table = pgTable('forum_table', {
+    id: text('id').primaryKey(),
+    parent_id: text('parent_id'),
+    order: integer('order').notNull(),
+    title: text('title').notNull(),
+    description: text('teacher').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertForumTable = typeof forum_table.$inferInsert;
+export type SelectForumTable = typeof forum_table.$inferSelect;
+
+export const forum_posts = pgTable('forum_posts', {
+    id: text('id').primaryKey(),
+    parent_id: text('parent_id'),
+    table_id: text('table_id').notNull(),
+    user_email: text('user_email').notNull(),
+    user_name: text('user_name').notNull(),
+    title: text('title').notNull(),
+    likes: integer('likes').notNull(),
+    likedBy: text('likedBy').array().notNull(),
+    description: text('description').notNull(),
+    order: integer('order').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
