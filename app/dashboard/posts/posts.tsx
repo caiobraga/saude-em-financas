@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import UploadFileForm from "@/components/posts/uploadFileForm";
 import SectionList from "@/components/posts/sectionList";
 import AddModalSectionForm from "@/components/posts/addModalSectionForm";
-import ConfirmDeletionSectionForm from "@/components/posts/confirmDeletionModalSection";
+import ConfirmDeletionSectionForm from "@/components/confirmDeletionModalSection";
 import { CirclePlus } from "lucide-react";
 
 interface PostsProps {
