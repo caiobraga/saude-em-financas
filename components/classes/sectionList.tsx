@@ -184,7 +184,7 @@ function SectionItem({
 
 
     return (
-        <div className="border rounded-md bg-gradient-to-r from-gray-50 to-gray-100">
+        <div className="border rounded-md bg-gray-100">
             <div
                 className="flex justify-between items-center p-4 bg-grey-100 cursor-pointer"
                 onClick={toggleExpand}
@@ -287,13 +287,13 @@ function SectionItem({
                         </div>
                     )}
                     {/* Render Classes */}
-                    <div className="mt-6 ">
+                    <div className="mt-6  ">
                         <ul className="space-y-6">
                             {classes.map((cls) => (
                                 cls.section_id === section.id && (
                                     <div
                                         key={cls.id}
-                                        className="p-6 border rounded-lg shadow-lg "
+                                        className="p-6 border rounded-lg  backdrop-blur-xl bg-white"
                                     >
                                         {/* Video Player */}
                                         <div className="aspect-w-16 aspect-h-9 mb-6 bg-white rounded-lg overflow-hidden">
@@ -308,7 +308,7 @@ function SectionItem({
 
                                         {/* Title and Description */}
                                         <li>
-                                            <h5 className="text-4xl font-extrabold text-gray-900 mb-8">
+                                            <h5 className="text-4xl font-mono text-gray-900 mb-8">
                                                 {cls.title}
                                             </h5>
                                             <p className="text-lg text-gray-600">
