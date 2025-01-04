@@ -5,6 +5,7 @@ import { classes, classes_sections, whatched_video_by_user } from '@/utils/db/sc
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm'
 import { createClient } from '@/utils/supabase/client';
+import { insertLog } from '../actions';
 
 export async function insertSection(parent_id: string | null, formData: FormData) {
     try {
@@ -203,6 +204,9 @@ export async function insertWatchedVideo(formData: FormData) {
             created_at: new Date(),
             updated_at: new Date(),
         });
+
+        await insertLog(formData.get('user_email') as string, `Video ${formData.get('video_name') as string} from class ${formData.get('class_name') as string} watched: ${formData.get('watched')} `);
+
         console.log("response", response);
 
     } catch (error) {
@@ -219,6 +223,8 @@ export async function updateWatchedVideo(formData: FormData) {
             watched: formData.get('watched') as string,
             updated_at: new Date()
         }).where(eq(whatched_video_by_user.id, formData.get('id') as string));
+
+        await insertLog(formData.get('user_email') as string, `Video ${formData.get('video_name') as string} from class ${formData.get('class_name') as string} watched: ${formData.get('watched')} `);
         console.log(response);
     } catch (error) {
         return { message: error }

@@ -124,9 +124,13 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
         try {
             const formData = new FormData();
             const video = watchedVideos.find((video) => video.video_id === videoId);
+            const aula = classes.find((video) => video.video_id === videoId);
+            const section = sections.find((section) => section.id === aula?.section_id);
             formData.append("video_id", videoId);
             formData.append("user_email", userEmail);
             formData.append("watched", (video != undefined && video.watched == "true") ? "false" : "true");
+            formData.append("class_name", section?.title ?? "");
+            formData.append("video_name", aula?.title ?? "");
             formData.append("id", video?.id ?? "");
 
             if (!video) {

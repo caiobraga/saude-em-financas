@@ -4,6 +4,7 @@ import { db } from '@/utils/db/db'
 import { forum_table, forum_posts, whatched_video_by_user } from '@/utils/db/schema'
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { insertLog } from '../actions';
 
 
 export async function insertForumTable(parent_id: string | null, formData: FormData) {
@@ -77,6 +78,9 @@ export async function insertForumPosts(parent_id: string | null, formData: FormD
             created_at: new Date(),
             updated_at: new Date(),
         });
+
+        await insertLog(formData.get('user_email') as string, `Created a new post with title: ${formData.get('title') as string}`)
+
         console.log("response", response);
 
     } catch (error) {
@@ -102,6 +106,9 @@ export async function updateForumPosts(parent_id: string | null, formData: FormD
             table_id: formData.get('table_id') as string,
             updated_at: new Date()
         }).where(eq(forum_posts.id, formData.get('id') as string));
+
+        await insertLog(formData.get('user_email') as string, `Updated post with title: ${formData.get('title') as string}`)
+
         console.log(response);
     } catch (error) {
         return { message: error }
@@ -111,6 +118,8 @@ export async function updateForumPosts(parent_id: string | null, formData: FormD
 export async function deleteForumPosts(currentState: { message: string }, formData: FormData) {
     try {
         const result = await db.delete(forum_posts).where(eq(forum_posts.id, formData.get('id') as string));
+
+        await insertLog(formData.get('user_email') as string, `Deleted post with title: ${formData.get('title') as string}`)
         console.log(result);
     } catch (error) {
         return { message: error }
