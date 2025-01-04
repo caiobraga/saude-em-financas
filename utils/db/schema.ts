@@ -93,3 +93,35 @@ export const forum_posts = pgTable('forum_posts', {
     created_at: timestamp('created_at').notNull(),
     updated_at: timestamp('updated_at').notNull(),
 });
+
+export const whatched_video_by_user = pgTable('whatched_video_by_user', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    video_id: text('video_id').notNull(),
+    watched: text('watched').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertWhatchedVideoByUser = typeof whatched_video_by_user.$inferInsert;
+export type SelectWhatchedVideoByUser = typeof whatched_video_by_user.$inferSelect;
+
+export const post_seen_by_user = pgTable('post_seen_by_user', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    post_id: text('post_id').notNull(),
+    seen: text('seen').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export const logs = pgTable('logs', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    action: text('action').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertLogs = typeof logs.$inferInsert;
+export type SelectLogs = typeof logs.$inferSelect;

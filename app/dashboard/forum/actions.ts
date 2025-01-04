@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/utils/db/db'
-import { forum_table, forum_posts } from '@/utils/db/schema'
+import { forum_table, forum_posts, whatched_video_by_user } from '@/utils/db/schema'
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -132,3 +132,4 @@ export async function getForumPostsByTableId(table_id: string) {
         return []
     }
 }
+

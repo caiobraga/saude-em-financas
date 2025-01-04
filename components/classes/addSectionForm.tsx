@@ -2,9 +2,20 @@ import React from "react";
 
 interface AddSectionFormProps {
     onSubmit: (formData: FormData) => void;
+    sectionToEdit: Section | null;
 }
 
-const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
+interface Section {
+    id: string;
+    parent_id: string | null;
+    order: number;
+    title: string;
+    description: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit, sectionToEdit }) => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
@@ -13,10 +24,13 @@ const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
 
     return (
         <form className="bg-gray-100 p-4 rounded-md shadow-md" onSubmit={handleSubmit}>
-            <h3 className="text-xl font-bold mb-2">Add New Section</h3>
+            <h3 className="text-xl font-bold mb-2">
+                {sectionToEdit ? "Edit Section" : "Add New Section"}
+            </h3>
 
             <div className="grid gap-2 mt-2">
-                <label htmlFor="order" className="text-sm text-gray-700">
+                <label htmlFor="order" className="text-sm text-gray-700"
+                >
                     Order
                 </label>
                 <input
@@ -25,6 +39,7 @@ const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
                     type="number"
                     className="border rounded-md p-2"
                     required
+                    defaultValue={sectionToEdit?.order || ""}
                 />
             </div>
 
@@ -38,6 +53,7 @@ const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
                     type="text"
                     className="border rounded-md p-2"
                     required
+                    defaultValue={sectionToEdit?.title || ""}
                 />
             </div>
 
@@ -50,6 +66,7 @@ const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
                     name="description"
                     className="border rounded-md p-2"
                     required
+                    defaultValue={sectionToEdit?.description || ""}
                 />
             </div>
 
@@ -57,7 +74,7 @@ const AddSectionForm: React.FC<AddSectionFormProps> = ({ onSubmit }) => {
                 className="bg-blue-500 text-white px-4 py-2 mt-4 rounded hover:bg-blue-600"
                 type="submit"
             >
-                Add Section
+                {sectionToEdit ? "Update Section" : "Add Section"}
             </button>
         </form>
     );

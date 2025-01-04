@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/utils/db/db'
-import { classes, classes_sections } from '@/utils/db/schema'
+import { classes, classes_sections, whatched_video_by_user } from '@/utils/db/schema'
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm'
 import { createClient } from '@/utils/supabase/client';
@@ -97,12 +97,19 @@ export async function deleteClass(currentState: { message: string }, formData: F
     }
 }
 
-export async function videoUpload(formData: FormData) {
+export async function videoUploadorEdit(formData: FormData) {
     try {
         const supabase = createClient();
 
-        // Extract data from FormData
+        const video_id_inicial = formData.get('video_id') as string | null;
+        const class_id = formData.get('id') as string | null;
         const section_id = formData.get('section_id') as string;
+
+        if (video_id_inicial && class_id) {
+            await deleteVideo(video_id_inicial, class_id, section_id);
+        }
+
+        // Extract data from FormData
         const file = formData.get('file') as File;
         console.log('section_id:', section_id);
         console.log('file:', file);
@@ -129,6 +136,28 @@ export async function videoUpload(formData: FormData) {
     }
 }
 
+export async function deleteVideo(video_id: string, class_id: string, section_id: string) {
+    try {
+        const supabase = createClient();
+        const filePath = `${section_id}/${video_id}.mp4`;
+
+        const { data, error } = await supabase.storage.from('classes').remove([filePath]);
+
+        if (error) {
+            return { message: error.message };
+        }
+
+        let formData = new FormData();
+        formData.set('id', class_id);
+
+        return await deleteClass({ message: '' }, formData);
+
+    } catch (error) {
+        console.error('Error deleting video:', error);
+        return { message: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
 export async function getVideosFromSectionId(section_id: string) {
     try {
         const supabase = createClient();
@@ -147,5 +176,51 @@ export async function getVideosFromSectionId(section_id: string) {
         return data;
     } catch (error) {
         return []
+    }
+}
+
+export async function getWatchedVideosByUser(userEmail: string) {
+    try {
+        const response = await db.select().from(whatched_video_by_user).where(eq(whatched_video_by_user.user_email, userEmail));
+        if (response) {
+            return response;
+        }
+        return [];
+    } catch (error) {
+        return []
+    }
+}
+
+export async function insertWatchedVideo(formData: FormData) {
+    try {
+        const watched = formData.get('watched') as string;
+        console.log("watched", watched);
+        const response = await db.insert(whatched_video_by_user).values({
+            id: uuidv4(),
+            user_email: formData.get('user_email') as string,
+            video_id: formData.get('video_id') as string,
+            watched: formData.get('watched') as string,
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+        console.log("response", response);
+
+    } catch (error) {
+        console.log("error", error);
+        return { message: error }
+    }
+}
+
+export async function updateWatchedVideo(formData: FormData) {
+    try {
+        const response = await db.update(whatched_video_by_user).set({
+            user_email: formData.get('user_email') as string,
+            video_id: formData.get('video_id') as string,
+            watched: formData.get('watched') as string,
+            updated_at: new Date()
+        }).where(eq(whatched_video_by_user.id, formData.get('id') as string));
+        console.log(response);
+    } catch (error) {
+        return { message: error }
     }
 }

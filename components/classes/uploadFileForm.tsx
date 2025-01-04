@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { CircularProgress } from "@nextui-org/react";
 
@@ -12,20 +12,68 @@ interface Section {
     updated_at: Date;
 }
 
+interface Classes {
+    id: string;
+    section_id: string;
+    video_id: string;
+    title: string;
+    description: string;
+    order: number;
+    created_at: Date;
+    updated_at: Date;
+}
+
 interface UploadFileFormProps {
     videoUpload: (formData: FormData) => Promise<any>;
     sectionOptions: Section[];
     loadingAddVideo: boolean;
     setLoadingAddVideo: (loading: boolean) => void;
+    videoToEdit: Classes | null;
+    defaultFile?: { url: string; name: string };
 }
 
 const UploadFileForm: React.FC<UploadFileFormProps> = ({ videoUpload, sectionOptions, loadingAddVideo,
-    setLoadingAddVideo }) => {
+    setLoadingAddVideo, videoToEdit, defaultFile }) => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [sectionId, setSectionId] = useState<string>("");
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [order, setOrder] = useState<number>(0);
+    const [videoId, setVideoId] = useState<string | null>(null);
+    const [id, setId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (videoToEdit) {
+            setId(videoToEdit.id);
+            setSectionId(videoToEdit.section_id);
+            setVideoId(videoToEdit.video_id);
+            setTitle(videoToEdit.title);
+            setDescription(videoToEdit.description);
+            setOrder(videoToEdit.order);
+            if (!defaultFile) return;
+            try {
+                fetch(defaultFile.url)
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                        const file = new File([blob], defaultFile.name, { type: blob.type });
+                        setSelectedFiles([file]);
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching default file:", error);
+                    });
+            } catch (error) {
+                console.error("Error creating default file:", error);
+            }
+
+        } else {
+            setId(null);
+            setSectionId("");
+            setVideoId(null);
+            setTitle("");
+            setDescription("");
+            setOrder(0);
+        }
+    }, [defaultFile, videoToEdit]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
@@ -59,6 +107,11 @@ const UploadFileForm: React.FC<UploadFileFormProps> = ({ videoUpload, sectionOpt
             formData.append("title", title);
             formData.append("description", description);
             formData.append("order", order.toString());
+
+            if (videoId && id) {
+                formData.append("video_id", videoId);
+                formData.append("id", id || "");
+            }
 
             const response = await videoUpload(formData);
             if (response.message) {
@@ -152,6 +205,7 @@ const UploadFileForm: React.FC<UploadFileFormProps> = ({ videoUpload, sectionOpt
                                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white shadow-sm focus:ring focus:ring-blue-300 focus:outline-none w-1/2"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
+                                defaultValue={videoToEdit?.description || ""}
                             />
                         </div>
 

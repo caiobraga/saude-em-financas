@@ -64,6 +64,13 @@
       "when": 1735938483502,
       "tag": "0008_lowly_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1735994880261,
+      "tag": "0009_military_gertrude_yorkes",
+      "breakpoints": true
     }
   ]
 }

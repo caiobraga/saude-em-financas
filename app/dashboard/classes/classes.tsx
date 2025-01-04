@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import {
-    getSections, insertSection, updateSection, deleteSection, videoUpload, insertClass,
+    getSections, insertSection, updateSection, deleteSection, videoUploadorEdit, deleteVideo,
     getClasses,
+    getWatchedVideosByUser,
+    insertWatchedVideo,
+    updateWatchedVideo,
 } from "./actions";
 import { useDisclosure } from "@nextui-org/modal";
 
@@ -14,6 +17,7 @@ import UploadFileForm from "@/components/classes/uploadFileForm";
 import SectionList from "@/components/classes/sectionList";
 import { Button } from "@nextui-org/react";
 import { CirclePlus } from "lucide-react";
+import { get } from "http";
 
 interface ClassesProps {
     readonly userEmail: string;
@@ -42,11 +46,14 @@ interface Classes {
     updated_at: Date;
 }
 
-interface SectionWithChildren extends Section {
-    children: SectionWithChildren[];
-    classes: Classes[];
+interface WhatchedVideoByUser {
+    id: string;
+    user_email: string;
+    video_id: string;
+    watched: string;
+    created_at: Date;
+    updated_at: Date;
 }
-
 
 
 export default function Classes({ userEmail, plan, access_level }: ClassesProps) {
@@ -56,14 +63,24 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deleteVideoModalVisible, setDeleteVideoModalVisible] = useState(false);
+
     const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+    const [videoToDelete, setVideoToDelete] = useState<Classes | null>(null);
 
     const [parent_id, setParentId] = useState<string | null>(null);
     const [id, setId] = useState<string | null>(null);
 
+    const [sectionToEdit, setSectionToEdit] = useState<Section | null>(null);
+    const [videoToEdit, setVideoToEdit] = useState<Classes | null>(null);
+
     const [loadingAddVideo, setLoadingAddVideo] = useState<boolean>(false);
 
+    const [watchedVideos, setWatchedVideos] = useState<WhatchedVideoByUser[]>([]);
+
     const BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+
 
     // Fetch sections on component mount
     useEffect(() => {
@@ -74,6 +91,8 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                 setSections(fetchedSections);
                 const fetchedClasses = await getClasses();
                 setClasses(fetchedClasses);
+                const fetchedWatchedVideos = await getWatchedVideosByUser(userEmail);
+                setWatchedVideos(fetchedWatchedVideos);
             } catch (error) {
                 console.error("Error fetching sections:", error);
             } finally {
@@ -84,9 +103,10 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
         fetchSectionsAndClasses();
     }, []);
 
-    const openEditOrAddModal = (new_parent_id: string | null, id: string | null) => {
+    const openEditOrAddModal = (new_parent_id: string | null, id: string | null, section: Section | null) => {
         setParentId(new_parent_id);
         setId(id);
+        setSectionToEdit(section);
         onOpen();
     }
 
@@ -94,6 +114,36 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
         setSectionToDelete(sectionId);
         setDeleteModalVisible(true);
     };
+
+    const openDeleteVideoModal = (video: Classes) => {
+        setVideoToDelete(video);
+        setDeleteVideoModalVisible(true);
+    };
+
+    const handleWatchedVideo = async (videoId: string) => {
+        try {
+            const formData = new FormData();
+            const video = watchedVideos.find((video) => video.video_id === videoId);
+            formData.append("video_id", videoId);
+            formData.append("user_email", userEmail);
+            formData.append("watched", (video != undefined && video.watched == "true") ? "false" : "true");
+            formData.append("id", video?.id ?? "");
+
+            if (!video) {
+                await insertWatchedVideo(formData);
+                const new_watched_videos = await getWatchedVideosByUser(userEmail);
+                setWatchedVideos(new_watched_videos);
+            } else {
+                await updateWatchedVideo(formData);
+                const new_watched_videos = await getWatchedVideosByUser(userEmail);
+                setWatchedVideos(new_watched_videos);
+            }
+        } catch (error) {
+            toast.error("Error updating watched video status.");
+            console.error("Error:", error);
+        }
+    };
+
 
     const handleAddSection = async (formData: FormData) => {
         onOpenChange();
@@ -151,6 +201,39 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
         }
     };
 
+
+
+    const confirmDeleteVideo = async () => {
+
+        if (!videoToDelete) return;
+
+        try {
+
+            await deleteVideo(videoToDelete.video_id, videoToDelete.id, videoToDelete.section_id);
+
+            const updatedClasses = await getClasses();
+            setClasses(updatedClasses);
+        } catch (error) {
+            toast.error("Error deleting section");
+            console.error("Error deleting section:", error);
+        } finally {
+            setDeleteModalVisible(false);
+            setSectionToDelete(null);
+        }
+    };
+
+    const editVideo = async (classes: Classes) => {
+        setVideoToEdit(classes);
+        if (typeof window !== 'undefined') {
+            window.scrollTo(
+                {
+                    top: 0,
+                    behavior: "smooth"
+                }
+            );
+        }
+    };
+
     return (
         <div className="max-w-full mx-auto p-6 font-sans space-y-8">
             {/* Header */}
@@ -160,7 +243,10 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                 <p className="text-lg text-gray-600">Plan: {plan}</p>
                 <p className="text-lg text-gray-600">Access Level: {access_level}</p>
             </header>
-            {(access_level === "admin" && !loading) && <UploadFileForm videoUpload={videoUpload} sectionOptions={sections} setLoadingAddVideo={setLoadingAddVideo} loadingAddVideo={loadingAddVideo} />}
+            {(access_level === "admin" && !loading) && <UploadFileForm videoUpload={videoUploadorEdit} sectionOptions={sections} setLoadingAddVideo={setLoadingAddVideo} loadingAddVideo={loadingAddVideo}
+                videoToEdit={videoToEdit}
+                defaultFile={videoToEdit ? { url: `${BASE_URL}/storage/v1/object/public/classes/${videoToEdit.section_id}/${videoToEdit.video_id}.mp4`, name: "default-video.mp4" } : undefined}
+            />}
 
             {/* Section Management */}
             <main >
@@ -175,6 +261,10 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                         openEditOrAddModal={openEditOrAddModal}
                         BASE_URL={BASE_URL ?? ''}
                         access_level={access_level}
+                        handleDeletePost={openDeleteVideoModal}
+                        handleEditPost={editVideo}
+                        watchedVideos={watchedVideos}
+                        onWatchedVideo={handleWatchedVideo}
                     />
                 ) : (
                     <>
@@ -182,7 +272,7 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
                         {
                             access_level === "admin" &&
                             <Button isIconOnly aria-label="Like" color="danger" onPress={() => {
-                                openEditOrAddModal(null, null);
+                                openEditOrAddModal(null, null, null);
                             }}>
                                 <CirclePlus />
                             </Button>}
@@ -190,11 +280,16 @@ export default function Classes({ userEmail, plan, access_level }: ClassesProps)
 
                 )}
 
-                {access_level === "admin" && <AddModalSectionForm title="Add Or Edit Section" onSubmit={handleAddSection} isOpen={isOpen} onOpenChange={onOpenChange} />}
+                {access_level === "admin" && <AddModalSectionForm title="Add Or Edit Section" onSubmit={handleAddSection} isOpen={isOpen} onOpenChange={onOpenChange} sectionToEdit={sectionToEdit} />}
 
                 {access_level === "admin" && <ConfirmDeletionSectionForm title="Are you sure you whant to delete this section?" onSubmit={confirmDelete} isOpen={deleteModalVisible} onOpenChange={() => {
                     setDeleteModalVisible(!deleteModalVisible);
                     setSectionToDelete(null);
+                }} />}
+
+                {access_level === "admin" && <ConfirmDeletionSectionForm title="Are you sure you whant to delete this video?" onSubmit={confirmDeleteVideo} isOpen={deleteVideoModalVisible} onOpenChange={() => {
+                    setDeleteVideoModalVisible(!deleteVideoModalVisible);
+                    setVideoToDelete(null);
                 }} />}
             </main>
         </div>

@@ -67,6 +67,8 @@ export default function Forum({ userEmail, plan, access_level }: ForumProps) {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [tableToDelete, setTableToDelete] = useState<string | null>(null);
 
+    const [loadingTables, setLoadingTables] = useState<boolean>(true);
+    const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
 
     useEffect(() => {
         fetchTables();
@@ -74,21 +76,25 @@ export default function Forum({ userEmail, plan, access_level }: ForumProps) {
     }, []);
 
     const fetchTables = async () => {
+        setLoadingTables(true);
         try {
             const data = await getForumTable();
             setTables(data);
         } catch (error) {
             toast.error("Failed to fetch tables.");
         }
+        setLoadingTables(false);
     };
 
     const fetchPosts = async () => {
+        setLoadingPosts(true);
         try {
             const data = await getForumPosts();
             setPosts(data);
         } catch (error) {
             toast.error("Failed to fetch posts.");
         }
+        setLoadingPosts(false);
     };
 
     const openDeleteModal = (tableId: string) => {
@@ -286,6 +292,7 @@ export default function Forum({ userEmail, plan, access_level }: ForumProps) {
 
             <Tabs>
                 <TabList>
+                    {loadingTables && <p>Loading tables...</p>}
                     {tables.map((table) => (
                         <Tab key={table.id}>
                             <div className="flex items-center justify-between">
@@ -357,6 +364,7 @@ export default function Forum({ userEmail, plan, access_level }: ForumProps) {
                                     </button>
                                 </div>
                             )}
+                            {loadingPosts && <p>Loading posts...</p>}
                             <RenderPosts
                                 parentId={null}
                                 tableId={table.id}
