@@ -11,11 +11,21 @@ interface AddModalSectionFormProps {
     title: string;
     onSubmit: (formData: FormData) => void;
     isOpen: boolean;
-    onOpenChange: () => void
-
+    onOpenChange: () => void;
+    sectionToEdit: Section | null;
 }
 
-const AddModalSectionForm: React.FC<AddModalSectionFormProps> = ({ onSubmit, isOpen, onOpenChange, title }) => {
+interface Section {
+    id: string;
+    parent_id: string | null;
+    order: number;
+    title: string;
+    description: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+const AddModalSectionForm: React.FC<AddModalSectionFormProps> = ({ onSubmit, isOpen, onOpenChange, title, sectionToEdit }) => {
     return (
         <Modal isOpen={isOpen} onOpenChange={onOpenChange}
             style={{ maxWidth: '500px', maxHeight: '400px' }}
@@ -45,7 +55,7 @@ const AddModalSectionForm: React.FC<AddModalSectionFormProps> = ({ onSubmit, isO
                     <>
                         <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
                         <ModalBody>
-                            <AddSectionForm onSubmit={onSubmit} />
+                            <AddSectionForm onSubmit={onSubmit} sectionToEdit={sectionToEdit} />
                         </ModalBody>
                     </>
                 )}
