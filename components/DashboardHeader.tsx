@@ -14,9 +14,11 @@ interface DashboardHeaderProps {
     readonly page: string;
     readonly setPage: (page: string) => void;
     readonly pagesList: { name: string, href: string, current: boolean }[];
+    readonly access_level: 'user' | 'admin';
+    readonly user_email: string;
 }
 
-export default function DashboardHeader({ plan, page, setPage, pagesList }: DashboardHeaderProps) {
+export default function DashboardHeader({ plan, page, setPage, pagesList, access_level, user_email }: DashboardHeaderProps) {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,19 +54,8 @@ export default function DashboardHeader({ plan, page, setPage, pagesList }: Dash
                     <span className="sr-only">Toggle Menu</span>
                 </Button>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <div className="w-full flex-1 md:w-auto md:flex-none">
-                        <form>
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    type="search"
-                                    placeholder="Search..."
-                                    className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-                                />
-                            </div>
-                        </form>
-                    </div>
-                    <DashboardHeaderProfileDropdown />
+
+                    <DashboardHeaderProfileDropdown access_level={access_level} user_email={user_email} />
                 </div>
             </div>
         </header>

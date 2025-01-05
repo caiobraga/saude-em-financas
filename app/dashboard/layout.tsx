@@ -6,8 +6,8 @@ import { ToastContainer } from 'react-toastify';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "SAAS Starter Kit",
-    description: "SAAS Starter Kit with Stripe, Supabase, Postgres",
+    title: "Saúde em Finanças",
+    description: "",
 };
 
 export default function DashboardLayout({

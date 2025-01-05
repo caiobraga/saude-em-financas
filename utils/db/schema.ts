@@ -125,3 +125,26 @@ export const logs = pgTable('logs', {
 
 export type InsertLogs = typeof logs.$inferInsert;
 export type SelectLogs = typeof logs.$inferSelect;
+
+export const notifications = pgTable('notifications', {
+    id: text('id').primaryKey(),
+    title: text('title').notNull(),
+    description: text('description').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertNotifications = typeof notifications.$inferInsert;
+export type SelectNotifications = typeof notifications.$inferSelect;
+
+export const user_notifications = pgTable('user_notifications', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    notification_id: text('notification_id').notNull(),
+    seen: text('seen').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertUserNotifications = typeof user_notifications.$inferInsert;
+export type SelectUserNotifications = typeof user_notifications.$inferSelect;

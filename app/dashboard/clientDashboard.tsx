@@ -44,10 +44,8 @@ export default function ClientDashboard({ userEmail, plan, access_level, dashboa
 
     return (
         <div className="container">
-            <DashboardHeader page={page} pagesList={pages} plan={plan} setPage={setPage} />
-            <div>
-                <p>Current Page: {page}</p>
-            </div>
+            <DashboardHeader page={page} pagesList={pages} plan={plan} setPage={setPage} access_level={access_level} user_email={userEmail} />
+
             {
                 page === "Dashboard" && (
                     dashboard

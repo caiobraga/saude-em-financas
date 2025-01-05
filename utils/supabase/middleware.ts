@@ -47,6 +47,9 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.startsWith('/forgot-password') &&
         !(request.nextUrl.pathname === '/')
     ) {
+        if (!user && request.nextUrl.pathname.startsWith("/api/sendnotification")) {
+            return NextResponse.next(); // Allow access to this specific API route
+        }
         // no user, potentially respond by redirecting the user to the login page
         url.pathname = '/login'
         return NextResponse.redirect(url)
