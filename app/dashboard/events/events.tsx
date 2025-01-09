@@ -157,16 +157,25 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
         const fetchAllData = async () => {
             try {
                 setLoading(true);
-                setAvailableTimes(await getAvaliableTimes());
-                setRecessTimes(await getRecessTimes());
-                setEvents(await getEvents());
-                setAppointments(await getAppointments());
+
+                const [fetchedAvailableTimes, fetchedRecessTimes, fetchedEvents, fetchedAppointments] = await Promise.all([
+                    getAvaliableTimes(),
+                    getRecessTimes(),
+                    getEvents(),
+                    getAppointments()
+                ]);
+
+                setAvailableTimes(fetchedAvailableTimes);
+                setRecessTimes(fetchedRecessTimes);
+                setEvents(fetchedEvents);
+                setAppointments(fetchedAppointments);
             } catch (error) {
                 toast.error("Failed to load data");
             } finally {
                 setLoading(false);
             }
         };
+
         fetchAllData();
     }, []);
 

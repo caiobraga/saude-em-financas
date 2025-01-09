@@ -145,30 +145,33 @@ export default function Dashboard({ user_name, userEmail, plan, access_level }: 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const classes = await getClasses();
-                const posts = await getPosts();
-                const events = await getEvents();
+                setLoading(true);
+                const [fetchedClasses, fetchedPosts, fetchedEvents] = await Promise.all([
+                    getClasses(),
+                    getPosts(),
+                    getEvents()
+                ]);
 
                 // Prepare activity data
-                const classItems: ActivityItem[] = classes.map((item) => ({
+                const classItems: ActivityItem[] = fetchedClasses.map((item) => ({
                     id: item.id,
-                    type: "class",
+                    type: "class" as const, // Explicitly set the type
                     title: item.title,
                     description: item.description,
                     date: new Date(item.created_at),
                 }));
 
-                const postItems: ActivityItem[] = posts.map((item) => ({
+                const postItems: ActivityItem[] = fetchedPosts.map((item) => ({
                     id: item.id,
-                    type: "post",
+                    type: "post" as const, // Explicitly set the type
                     title: item.title,
                     description: item.description,
                     date: new Date(item.created_at),
                 }));
 
-                const eventItems: ActivityItem[] = events.map((item) => ({
+                const eventItems: ActivityItem[] = fetchedEvents.map((item) => ({
                     id: item.id,
-                    type: "event",
+                    type: "event" as const, // Explicitly set the type
                     title: item.title,
                     description: item.description,
                     date: new Date(item.created_at),
@@ -176,9 +179,7 @@ export default function Dashboard({ user_name, userEmail, plan, access_level }: 
                     link: item.link,
                 }));
 
-                const allItems = [...classItems, ...postItems, ...eventItems];
-                allItems.sort((a, b) => b.date.getTime() - a.date.getTime());
-
+                const allItems = [...classItems, ...postItems, ...eventItems].sort((a, b) => b.date.getTime() - a.date.getTime());
                 setActivityItems(allItems);
             } catch (error) {
                 toast.error("Error fetching data");
