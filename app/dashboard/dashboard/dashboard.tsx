@@ -276,27 +276,39 @@ export default function Dashboard({ user_name, userEmail, plan, access_level }: 
                     </div>
                 ) : (
                     <div className="activity-list h-80 overflow-y-auto space-y-3 bg-gray-50 p-4 rounded-lg shadow-inner">
-                        {activityItems.map((item, index) => (
+                        {activityItems.map((item) => (
                             <div
                                 key={item.id}
-                                className={`p-3 rounded-md shadow-sm border-l-4 ${item.type === "class"
-                                    ? "bg-blue-50 border-blue-500"
+                                className={`flex justify-between items-center p-3 rounded-md shadow-sm border ${item.type === "class"
+                                    ? "bg-blue-50 border-blue-200"
                                     : item.type === "post"
-                                        ? "bg-green-50 border-green-500"
-                                        : "bg-purple-50 border-purple-500"
+                                        ? "bg-green-50 border-green-200"
+                                        : "bg-purple-50 border-purple-200"
                                     }`}
                             >
-                                <h3 className="font-semibold text-sm">
-                                    {item.type === "class"
-                                        ? "New Class"
-                                        : item.type === "post"
-                                            ? "New Post"
-                                            : "New Event"}
-                                </h3>
-                                <p className="text-xs text-gray-700">{item.title}</p>
-                                <p className="text-xs text-gray-600">
-                                    {item.date.toLocaleDateString()} {item.time && `at ${item.time}`}
-                                </p>
+                                <div>
+                                    <h3 className="font-medium text-sm text-gray-800">
+                                        {item.type === "class"
+                                            ? "New Class"
+                                            : item.type === "post"
+                                                ? "New Post"
+                                                : "New Event"}
+                                    </h3>
+                                    <p className="text-xs text-gray-600">{item.title}</p>
+
+                                </div>
+
+                                {/* Event Link for Events */}
+                                {item.type === "event" && item.link && (
+                                    <a
+                                        href={item.link.startsWith("http") ? item.link : `https://${item.link}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 text-xs underline"
+                                    >
+                                        View
+                                    </a>
+                                )}
                             </div>
                         ))}
                     </div>
