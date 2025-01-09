@@ -11,13 +11,18 @@ interface ClientDashboardProps {
     readonly classes: React.ReactNode;
     readonly forum: React.ReactNode;
     readonly posts: React.ReactNode;
-
+    readonly events: React.ReactNode;
 }
 
 const pages = [
     {
         name: "Dashboard",
         href: "/",
+        current: false,
+    },
+    {
+        name: "Events",
+        href: "/events",
         current: false,
     },
     {
@@ -39,7 +44,7 @@ const pages = [
 
 export default function ClientDashboard({ userEmail, plan, access_level, dashboard, classes,
     forum,
-    posts }: ClientDashboardProps) {
+    posts, events }: ClientDashboardProps) {
     const [page, setPage] = useState("Dashboard");
 
     return (
@@ -49,6 +54,11 @@ export default function ClientDashboard({ userEmail, plan, access_level, dashboa
             {
                 page === "Dashboard" && (
                     dashboard
+                )
+            }
+            {
+                page === "Events" && (
+                    events
                 )
             }
             {

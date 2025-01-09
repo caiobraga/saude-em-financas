@@ -1,4 +1,5 @@
 import { integer, pgTable, text, timestamp, PgArray } from 'drizzle-orm/pg-core';
+import { link } from 'fs';
 
 export const usersTable = pgTable('users_table', {
     id: text('id').primaryKey(),
@@ -148,3 +149,55 @@ export const user_notifications = pgTable('user_notifications', {
 
 export type InsertUserNotifications = typeof user_notifications.$inferInsert;
 export type SelectUserNotifications = typeof user_notifications.$inferSelect;
+
+export const avaliable_times = pgTable('avaliable_times', {
+    id: text('id').primaryKey(),
+    days_of_the_week: text('days_of_the_week').array(),
+    time_start: text('time_start').notNull(),
+    time_end: text('time_end'),
+    time_before_request: text('time_before_request').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertAvaliableTimes = typeof avaliable_times.$inferInsert;
+export type SelectAvaliableTimes = typeof avaliable_times.$inferSelect;
+
+export const recess_times = pgTable('recess_times', {
+    id: text('id').primaryKey(),
+    days_of_the_week: text('days_of_the_week').array(),
+    time_start: text('time_start').notNull(),
+    time_end: text('time_end'),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertRecessTimes = typeof recess_times.$inferInsert;
+export type SelectRecessTimes = typeof recess_times.$inferSelect;
+
+export const events = pgTable('events', {
+    id: text('id').primaryKey(),
+    date: text('date').notNull(),
+    time: text('time').notNull(),
+    title: text('title').notNull(),
+    link: text('link').notNull(),
+    description: text('description').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertEvents = typeof events.$inferInsert;
+export type SelectEvents = typeof events.$inferSelect;
+
+export const apointments = pgTable('apointments', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    date: text('date').notNull(),
+    time: text('time').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertApointments = typeof apointments.$inferInsert;
+export type SelectApointments = typeof apointments.$inferSelect;
+

@@ -12,7 +12,8 @@ import Dashboard from "./dashboard/dashboard";
 import Classes from "./classes/classes";
 import Forum from "./forum/forum";
 import Posts from "./posts/posts";
-
+import Events
+    from "./events/events";
 export default async function Page() {
     const supabase = createClient();
 
@@ -41,13 +42,15 @@ export default async function Page() {
     const stripePlan = await getStripePlan(user!.email!)
     const access_level = checkUserInDB[0].access_level as "user" | "admin";
     const userEmail = data.user.email ?? '';
+    const user_name = checkUserInDB[0].name ?? '';
     return (
         <main className="flex-1">
             <ClientDashboard userEmail={userEmail} plan={stripePlan} access_level={access_level}
                 classes={<Classes userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
-                dashboard={<Dashboard userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+                dashboard={<Dashboard user_name={user_name} userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
                 forum={<Forum userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
                 posts={<Posts userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
+                events={<Events user_name={user_name} userEmail={userEmail} plan={stripePlan} access_level={access_level} />}
             />
         </main>
     );

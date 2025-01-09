@@ -1,0 +1,15 @@
+.card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.card h3 {
+    margin: 0 0 8px;
+}
+
+.card p {
+    margin: 4px 0;
+}
