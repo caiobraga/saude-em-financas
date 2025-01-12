@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         if (response.type == 'payment_intent.succeeded') {
             console.log("customer: ", response.data.object.customer)
             console.log("object: ", response.data.object)
-            const user_mail = response.data.object.charges.data.billing_details.email;
+            const user_mail = response.data.object.charges.data[0].billing_details.email;
             const amount_recived = response.data.object.amount;
             const credit = await db.select().from(appointments_credits).where(eq(appointments_credits.user_email, user_mail));
 
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
                     await db.update(appointments_credits).set({ credits: credit[0].credits + 5 }).where(eq(appointments_credits.user_email, user_mail));
                 }
             }
+            return;
         }
 
         console.log("customer: ", response.data.object.customer)
