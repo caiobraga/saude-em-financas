@@ -168,6 +168,8 @@ export const recess_times = pgTable('recess_times', {
     days_of_the_week: text('days_of_the_week').array(),
     time_start: text('time_start').notNull(),
     time_end: text('time_end'),
+    date_begin: timestamp('date_begin').notNull(),
+    date_end: timestamp('date_end').notNull(),
     created_at: timestamp('created_at').notNull(),
     updated_at: timestamp('updated_at').notNull(),
 });
@@ -200,4 +202,15 @@ export const apointments = pgTable('apointments', {
 
 export type InsertApointments = typeof apointments.$inferInsert;
 export type SelectApointments = typeof apointments.$inferSelect;
+
+export const appointments_credits = pgTable('appointments_credits', {
+    id: text('id').primaryKey(),
+    user_email: text('user_email').notNull(),
+    credits: integer('credits').notNull(),
+    created_at: timestamp('created_at').notNull(),
+    updated_at: timestamp('updated_at').notNull(),
+});
+
+export type InsertAppointmentsCredits = typeof appointments_credits.$inferInsert;
+export type SelectAppointmentsCredits = typeof appointments_credits.$inferSelect;
 

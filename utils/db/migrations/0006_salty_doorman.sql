@@ -1,1 +1,0 @@
-ALTER TABLE "classes" ADD COLUMN "order" integer NOT NULL;

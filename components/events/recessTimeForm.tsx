@@ -11,6 +11,8 @@ interface RecessTime {
     days_of_the_week: string[] | null;
     time_start: string;
     time_end: string | null;
+    date_begin: Date | null;
+    date_end: Date | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -19,6 +21,8 @@ const RecessTimeForm: React.FC<RecessTimeFormProps> = ({ onSubmit, recessTimeToE
     const [selectedDays, setSelectedDays] = useState<{ value: string; label: string }[]>([]);
     const [timeStart, setTimeStart] = useState("");
     const [timeEnd, setTimeEnd] = useState("");
+    const [dateBegin, setDateBegin] = useState("");
+    const [dateEnd, setDateEnd] = useState("");
 
     // Pre-fill form fields when editing
     useEffect(() => {
@@ -28,6 +32,8 @@ const RecessTimeForm: React.FC<RecessTimeFormProps> = ({ onSubmit, recessTimeToE
             );
             setTimeStart(recessTimeToEdit.time_start);
             setTimeEnd(recessTimeToEdit.time_end || "");
+            setDateBegin(recessTimeToEdit.date_begin ? recessTimeToEdit.date_begin.toISOString().slice(0, 10) : "");
+            setDateEnd(recessTimeToEdit.date_end ? recessTimeToEdit.date_end.toISOString().slice(0, 10) : "");
         }
     }, [recessTimeToEdit]);
 
@@ -99,6 +105,34 @@ const RecessTimeForm: React.FC<RecessTimeFormProps> = ({ onSubmit, recessTimeToE
                     value={timeEnd}
                     onChange={(e) => setTimeEnd(e.target.value)}
                     required
+                />
+            </div>
+
+            <div className="grid gap-2 mt-2">
+                <label htmlFor="date_begin" className="text-sm text-gray-700">
+                    Date Begin
+                </label>
+                <input
+                    id="date_begin"
+                    name="date_begin"
+                    type="date"
+                    className="border rounded-md p-2"
+                    value={dateBegin}
+                    onChange={(e) => setDateBegin(e.target.value)}
+                />
+            </div>
+
+            <div className="grid gap-2 mt-2">
+                <label htmlFor="date_end" className="text-sm text-gray-700">
+                    Date End
+                </label>
+                <input
+                    id="date_end"
+                    name="date_end"
+                    type="date"
+                    className="border rounded-md p-2"
+                    value={dateEnd}
+                    onChange={(e) => setDateEnd(e.target.value)}
                 />
             </div>
 

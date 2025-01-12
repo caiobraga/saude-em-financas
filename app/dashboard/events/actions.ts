@@ -6,11 +6,64 @@ import {
     recess_times,
     events,
     apointments,
+    appointments_credits,
 } from '@/utils/db/schema';
 import { eq, and } from "drizzle-orm";
 import { v4 as uuidv4 } from 'uuid';
 import { google, calendar_v3 } from 'googleapis';
+import { user } from '@nextui-org/react';
 
+
+
+const stripe_products = {
+    "credits": process.env.STRIPE_CREDITS_PRODUCT_ID,
+    "saude_em_financas": process.env.STRIPE_SAUDE_EM_FINANCAS_PRODUCT_ID,
+};
+
+export async function buyCredits(user_email: string, credits: number) {
+    try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const product_id = stripe_products["credits"];
+        const price = credits * 100; // Convert to cents
+        const response = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price: product_id,
+                quantity: credits,
+            }],
+            customer_email: user_email,
+            mode: 'payment',
+            success_url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/dashboard?success=true&credits=${credits}`,
+            cancel_url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/dashboard?canceled=true`,
+        });
+        return response;
+    } catch (error) {
+        console.error("Error buying credits:", error);
+        return { message: error };
+    }
+}
+
+export async function buySaudeEmFinancas(user_email: string) {
+    try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const product_id = stripe_products["saude_em_financas"];
+        const response = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price: product_id,
+                quantity: 1,
+            }],
+            customer_email: user_email,
+            mode: 'payment',
+            success_url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/dashboard?success=true&credits=1`,
+            cancel_url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/dashboard?canceled=true`,
+            metadata: { user_email: user_email },
+        });
+        return response;
+    } catch (error) {
+        return { message: error };
+    }
+}
 
 const SCOPES = [
     "https://www.googleapis.com/auth/calendar",
@@ -192,6 +245,8 @@ export async function insertRecessTime(formData: FormData) {
             days_of_the_week: getFormDataValue(formData, 'days_of_the_week').split(','),
             time_start: getFormDataValue(formData, 'time_start'),
             time_end: getFormDataValue(formData, 'time_end'),
+            date_begin: new Date(getFormDataValue(formData, 'date_begin')),
+            date_end: new Date(getFormDataValue(formData, 'date_end')),
             created_at: new Date(),
             updated_at: new Date(),
         });
@@ -340,3 +395,40 @@ export async function deleteAppointment(id: string) {
         return { message: error };
     }
 }
+
+export async function getUserCredits(user_email: string) {
+    try {
+        const response = await db.select().from(appointments_credits).where(eq(appointments_credits.user_email, user_email));
+        return response.length;
+    } catch (error) {
+        return 0;
+    }
+}
+
+export async function insertUserCredits(user_email: string, credits: number) {
+    try {
+        const response = await db.insert(appointments_credits).values({
+            id: uuidv4(),
+            user_email: user_email,
+            credits: credits,
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+        return response;
+    } catch (error) {
+        return { message: error };
+    }
+}
+
+export async function updateUserCredits(user_email: string, credits: number) {
+    try {
+        const response = await db.update(appointments_credits).set({
+            credits: credits,
+            updated_at: new Date(),
+        }).where(eq(appointments_credits.user_email, user_email));
+        return response;
+    } catch (error) {
+        return { message: error };
+    }
+}
+

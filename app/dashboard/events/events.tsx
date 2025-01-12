@@ -78,6 +78,10 @@ import {
     getAppointments,
     initGoogleCalendar,
     createGoogleCalendarEvent,
+    getUserCredits,
+    updateUserCredits,
+    buySaudeEmFinancas,
+    buyCredits,
 } from "./actions";
 
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -111,6 +115,8 @@ interface RecessTime {
     days_of_the_week: string[] | null;
     time_start: string;
     time_end: string | null;
+    date_begin: Date | null;
+    date_end: Date | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -144,7 +150,7 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
     const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
 
     const [appointments, setAppointments] = useState<Appointment[]>([]);
-
+    const [credits, setCredits] = useState<number>(0);
 
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
@@ -152,6 +158,18 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
     const [loading, setLoading] = useState(false);
 
     const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                const userCredits = await getUserCredits(userEmail);
+                setCredits(userCredits);
+            } catch {
+                toast.error("Failed to fetch user credits.");
+            }
+        };
+        fetchCredits();
+    }, [userEmail]);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -212,11 +230,20 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
                     hour12: false,
                 });
 
-                const isRecess = recessTimes.some((recess) =>
-                    recess.days_of_the_week?.includes(dayOfWeek) &&
-                    timeSlot >= recess.time_start &&
-                    (recess.time_end != null ? timeSlot < recess.time_end : true)
-                );
+                const isRecess = recessTimes.some((recess) => {
+                    // If date_begin and date_end are set, check if the date falls within the range
+                    const isDateInRange =
+                        recess.date_begin && recess.date_end
+                            ? new Date(recess.date_begin) <= new Date(date) &&
+                            new Date(recess.date_end) >= new Date(date)
+                            : recess.days_of_the_week?.includes(dayOfWeek);
+
+                    return (
+                        isDateInRange &&
+                        timeSlot >= recess.time_start &&
+                        (recess.time_end ? timeSlot < recess.time_end : true)
+                    );
+                });
 
                 const isBooked = getAppointmentsOfTheDay(date).some(
                     (appointment) => appointment.time === timeSlot
@@ -268,6 +295,8 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
             }
 
             await insertAppointment(formData);
+            await updateUserCredits(userEmail, credits - 1);
+            setCredits((prev) => prev - 1);
 
             const eventCreationResult = await createGoogleCalendarEvent({
                 date: selectedDate,
@@ -394,9 +423,47 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
         }
     };
 
+    const handlebuyCredits = async (userEmail: string, credits: number) => {
+        try {
+            const response = await buyCredits(userEmail, credits);
+            window.location.replace(response.url);
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to buy credits");
+        }
+    }
+
+    const handlebuySaudeEmFinancas = async (userEmail: string) => {
+        try {
+            const response = await buySaudeEmFinancas(userEmail);
+            window.location.replace(response.url);
+        } catch (error) {
+            toast.error("Failed to buy credits");
+        }
+    }
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Hello, {user_name}</h1>
+            <div className="mb-4">
+                <p>Available Credits: {credits}</p>
+                <button
+                    className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+                    onClick={() => {
+                        handlebuyCredits(userEmail, 1);
+                    }}
+                >
+                    Buy 1 Credit (R$700)
+                </button>
+                <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    onClick={() => {
+                        handlebuySaudeEmFinancas(userEmail);
+                    }}
+                >
+                    Buy 5 Credits (R$3000)
+                </button>
+            </div>
             {access_level === "admin" && (
                 <Tabs>
                     <TabList className="flex space-x-4 mb-4 border-b">

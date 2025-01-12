@@ -2,12 +2,27 @@ import StripePricingTable from "@/components/StripePricingTable";
 import Image from "next/image"
 import { createClient } from '@/utils/supabase/server'
 import { createStripeCheckoutSession } from "@/utils/stripe/api";
+import { db } from "@/utils/db/db";
+import { usersTable } from "@/utils/db/schema";
+import { eq } from 'drizzle-orm'
+import { redirect } from "next/navigation";
+
 export default async function Subscribe() {
     const supabase = createClient()
     const {
         data: { user },
     } = await supabase.auth.getUser()
     const checkoutSessionSecret = await createStripeCheckoutSession(user!.email!)
+
+
+    // check user plan in db
+    const checkUserInDB = await db.select().from(usersTable).where(eq(usersTable.email, user!.email!))
+
+
+    if (checkUserInDB[0].plan !== "none") {
+        console.log("User has no plan selected")
+        return redirect('/')
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-secondary">

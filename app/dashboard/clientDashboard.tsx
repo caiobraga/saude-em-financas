@@ -25,11 +25,11 @@ const pages = [
         href: "/events",
         current: false,
     },
-    {
+    /*{
         name: "Classes",
         href: "/classes",
         current: false,
-    },
+    },*/
     {
         name: "Fórum",
         href: "/forum",
@@ -61,10 +61,11 @@ export default function ClientDashboard({ userEmail, plan, access_level, dashboa
                     events
                 )
             }
-            {
+            {/*
                 page === "Classes" && (
                     classes
                 )
+             */
             }
             {
                 page === "Fórum" && (
