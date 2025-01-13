@@ -74,7 +74,7 @@ import {
     insertEvent,
     updateEvent,
     deleteEvent,
-    insertAppointment,
+    insertAppointmentWithCredits,
     getAppointments,
     initGoogleCalendar,
     createGoogleCalendarEvent,
@@ -294,9 +294,7 @@ export default function Events({ user_name, userEmail, plan, access_level }: Eve
                 return;
             }
 
-            await insertAppointment(formData);
-            await updateUserCredits(userEmail, credits - 1);
-            setCredits((prev) => prev - 1);
+            await insertAppointmentWithCredits(formData, userEmail);
 
             const eventCreationResult = await createGoogleCalendarEvent({
                 date: selectedDate,

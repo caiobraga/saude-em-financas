@@ -357,16 +357,38 @@ export async function getAppointmentsOfTheDay(date_appoit: string) {
     }
 }
 
-export async function insertAppointment(formData: FormData) {
+export async function insertAppointmentWithCredits(formData: FormData, user_email: string) {
     try {
-        const response = await db.insert(apointments).values({
-            id: uuidv4(),
-            user_email: getFormDataValue(formData, 'user_email'),
-            date: getFormDataValue(formData, 'date'),
-            time: getFormDataValue(formData, 'time'),
-            created_at: new Date(),
-            updated_at: new Date(),
+        const response = await db.transaction(async (tx) => {
+            // Check if the user has enough credits
+            const userCredits = await tx
+                .select()
+                .from(appointments_credits)
+                .where(eq(appointments_credits.user_email, user_email));
+
+            if (!userCredits.length || userCredits[0].credits <= 0) {
+                throw new Error("Insufficient credits to book an appointment.");
+            }
+
+            // Insert the appointment
+            await tx.insert(apointments).values({
+                id: uuidv4(),
+                user_email: getFormDataValue(formData, 'user_email'),
+                date: getFormDataValue(formData, 'date'),
+                time: getFormDataValue(formData, 'time'),
+                created_at: new Date(),
+                updated_at: new Date(),
+            });
+
+            // Decrement the user's credits
+            await tx.update(appointments_credits)
+                .set({
+                    credits: userCredits[0].credits - 1,
+                    updated_at: new Date(),
+                })
+                .where(eq(appointments_credits.user_email, user_email));
         });
+
         return response;
     } catch (error) {
         return { message: error };
