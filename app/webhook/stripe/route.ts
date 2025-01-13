@@ -41,7 +41,7 @@ export async function POST(request: Request) {
                     await db.update(appointments_credits).set({ credits: credit[0].credits + 5 }).where(eq(appointments_credits.user_email, user_mail));
                 }
             }
-            return;
+            return new Response('Success', { status: 200 })
         }
 
         console.log("customer: ", response.data.object.customer)
