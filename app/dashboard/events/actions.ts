@@ -399,7 +399,7 @@ export async function deleteAppointment(id: string) {
 export async function getUserCredits(user_email: string) {
     try {
         const response = await db.select().from(appointments_credits).where(eq(appointments_credits.user_email, user_email));
-        return response.length;
+        return response.length > 0 ? response[0].credits : 0;
     } catch (error) {
         return 0;
     }
